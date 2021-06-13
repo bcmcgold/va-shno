@@ -62,6 +62,7 @@ real eta_x, eta_y, eta_z; // thermal field components (chosen from normal dist)
 real Btherm = sqrt(2*damping*kB*T/(Ms*gammae/(2*`M_PI)*Vfl*dt_step));
 
 analog begin
+  // initial_step runs in first simulation step (measure DC operating point to determine frequency and ISF)
   @(initial_step) begin
     // initialize thermal field components
     eta_x = $rdist_normal(seed,0.0,1.0);
@@ -95,6 +96,8 @@ analog begin
     fb[3] = -(3*my+2*my0)*mx;
     fb[4] = mx*my/9;
   end
+  
+  // below code runs at each simulation iteration
 
   // Sets input impedance of spin Hall RF and DC ports
   I(sh_rf) <+ V(sh_rf)/Rhm;
