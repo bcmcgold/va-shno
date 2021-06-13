@@ -1,10 +1,14 @@
-// code adapted from https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1518185&casa_token=Z1p-52ykemYAAAAA:Dft-5QeNP1V7bMusI9AVwok1xkGey0boWdx8x8tAd-3CRqZFH-gsgkWjHY3iTU1lhAEXDTelvw
-// Updated version of sho_phys_Tnoise.va with making ISF analytical and able to model DC nonlinearity based on user input
-// this device is based on clamshell orbit (other orbital trajectories will have different analytical equations for ISF)
+// code adapted from LC oscillator macromodel in:
+// B. Gu, K. K. Gullapalli, S. Hamm, B. Mulvaney, X. Lai, and J. Roychowdhury,
+// “Implementing nonlinear oscillator macromodels using Verilog-AMS for accurate prediction of injection locking behaviors of oscillators,”
+// in BMAS 2005. Proceedings of the 2005 IEEE International Behavioral Modeling and Simulation Workshop, 2005., Sep. 2005, pp. 43–47. doi: 10.1109/BMAS.2005.1518185.
+
 `include "disciplines.vams"
 `include "constants.vams"
 
-module sho(sh_dc, sh_rf, mtj);
+// Analytical ISF-based oscillator macromodel with DC nonlinearity based on user input
+// Based on in-plane orbit (other orbital trajectories have different analytical equations for ISF)
+module shno(sh_dc, sh_rf, mtj);
 
 // define electrical nodes
 input sh_dc, sh_rf;
@@ -52,6 +56,7 @@ real sigma = hbar*thetaSH/(2*ec*Ms*Ash*tfl);
 real T = 300; // K
 real dt_step = 15e-12; // timestep for computing thermal field
 parameter seed = 12345; // can be set from hspice netlist
+
 // constants/variables for thermal field (don't change)
 real dt_sim = 0; // for keeping track of when thermal field should be changed
 real Tx, Ty, Tz; // thermal field components (chosen from normal dist)
@@ -60,23 +65,18 @@ real Btherm = sqrt(2*damping*kB*T/(Ms*gammae/(2*`M_PI)*Vfl*dt_step));
 analog begin
   @(initial_step) begin
     // initialize thermal field components
-  	Tx = $rdist_normal(seed,0.0,1.0);
-  	Ty = $rdist_normal(seed,0.0,1.0);
-  	Tz = $rdist_normal(seed,0.0,1.0);
+    Tx = $rdist_normal(seed,0.0,1.0);
+    Ty = $rdist_normal(seed,0.0,1.0);
+    Tz = $rdist_normal(seed,0.0,1.0);
 
-    //omega = 2.0*`M_PI*$table_model(V(sh_dc), "fg_vs_vdc.tbl", "L"); // free-running angular frequency
-    omega = 2.0*`M_PI*2.26e9;
+    omega = 2.0*`M_PI*$table_model(V(sh_dc), "fg_vs_vdc.tbl", "L"); // free-running angular frequency
     period = 2.0*`M_PI/omega; // s
 
     // Get equilibrium orbit Fourier components based on Vdc
-    //mx = $table_model(V(sh_dc), "mx_ft_vs_vdc.tbl", "L");
-    //my = $table_model(V(sh_dc), "my_ft_vs_vdc.tbl", "L");
-    //my0 = $table_model(V(sh_dc), "my0_ft_vs_vdc.tbl", "L");
-    //mz = $table_model(V(sh_dc), "mz_ft_vs_vdc.tbl", "L");
-    mx = 0.99;
-    my = 0.34;
-    my0 = 0.60;
-    mz = 0.21;
+    mx = $table_model(V(sh_dc), "mx_ft_vs_vdc.tbl", "L");
+    my = $table_model(V(sh_dc), "my_ft_vs_vdc.tbl", "L");
+    my0 = $table_model(V(sh_dc), "my0_ft_vs_vdc.tbl", "L");
+    mz = $table_model(V(sh_dc), "mz_ft_vs_vdc.tbl", "L");
 
     // equilibrium magnetization Fourier components
     fdmeq[1] = mx*mx+4*my*my+mz*mz;
@@ -97,9 +97,9 @@ analog begin
     fb[4] = mx*my/9;
   end
 
-	// Sets input impedance of spin Hall RF and DC ports
-	I(sh_rf) <+ V(sh_rf)/Rhm;
-	I(sh_dc) <+ V(sh_dc)/Rhm;
+  // Sets input impedance of spin Hall RF and DC ports
+  I(sh_rf) <+ V(sh_rf)/Rhm;
+  I(sh_dc) <+ V(sh_dc)/Rhm;
 
   // real perturbed time is given by
   // $abstime + V(alpha)
@@ -115,37 +115,32 @@ analog begin
   isf_by = omega*gammae/dmeq*mx*mz;
   isf_bz = omega*gammae/(2*dmeq)*(fb[3]*cos(psi)+fb[4]*cos(3*psi));
 	
-    // SHIL amplitude, V
-    //V2f = 2.5e11*Ash*Rhm*$table_model($abstime,"shil_square.tbl", "L");
-    V2f = 1.5e11*Ash*Rhm;
+  // SHIL amplitude, V
+  //V2f = 2.5e11*Ash*Rhm*$table_model($abstime,"shil_square.tbl", "L");
+  V2f = 1.5e11*Ash*Rhm;
 
-    // SHIL signal
-	Vshil = -V2f*cos(2*omega*$abstime);
+  // SHIL signal
+  Vshil = -V2f*cos(2*omega*$abstime);
 
   // effective thermal field
-	if ($abstime-dt_sim >= dt_step) begin
-		dt_sim = $abstime;
-		Tx = $rdist_normal(seed,0.0,1.0);
-		Ty = $rdist_normal(seed,0.0,1.0);
-		Tz = $rdist_normal(seed,0.0,1.0);
-	end
-	Tfield = Btherm*(Tx*isf_bx+Ty*isf_by+Tz*isf_bz);
+  if ($abstime-dt_sim >= dt_step) begin
+    dt_sim = $abstime;
+    Tx = $rdist_normal(seed,0.0,1.0);
+    Ty = $rdist_normal(seed,0.0,1.0);
+    Tz = $rdist_normal(seed,0.0,1.0);
+  end
+  Tfield = Btherm*(Tx*isf_bx+Ty*isf_by+Tz*isf_bz);
 
   // RHS of phase differential equation
   // linramp goes from 0 to 1 in first ns to set initial condition alpha(t=0) = 0
-  //I(alpha1) <+ -$table_model($abstime,"linramp.tbl", "L")*(isf_odd*V(sh_rf)+isf_even*Vshil+Tfield);
   I(alpha1) <+ -$table_model($abstime,"linramp.tbl", "L")*((isf_odd+isf_even)*(V(sh_rf)+Vshil)+Tfield);
   // LHS of phase differential equation
   I(alpha2) <+ ddt(V(alpha));
 
   // output variables for data collection, debugging, etc.
-	phase = V(alpha)*omega/`M_PI + init_phase/180; // output only, units of pi rad
-	vproberf = V(sh_rf);
-	vprobemtj = V(mtj);
-	K1f = isf_odd*V(sh_rf);
-	K2f = isf_even*Vshil;
+  phase = V(alpha)*omega/`M_PI + init_phase/180; // output only, units of pi rad
 
   // look up table to generate output
-  V(mtj) <+ I(mtj)*((Rp+Rap+Rhm)/2+(Rap-Rp)/2*mx*sin(psi)); // mxoutput is -sin
+  V(mtj) <+ I(mtj)*((Rp+Rap+Rhm)/2+(Rap-Rp)/2*mx*sin(psi));
 end
 endmodule
