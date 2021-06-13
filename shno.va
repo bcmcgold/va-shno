@@ -2,7 +2,6 @@
 // B. Gu, K. K. Gullapalli, S. Hamm, B. Mulvaney, X. Lai, and J. Roychowdhury,
 // “Implementing nonlinear oscillator macromodels using Verilog-AMS for accurate prediction of injection locking behaviors of oscillators,” in BMAS 2005.
 // Proceedings of the 2005 IEEE International Behavioral Modeling and Simulation Workshop, 2005., Sep. 2005, pp. 43–47. doi: 10.1109/BMAS.2005.1518185.
-
 `include "disciplines.vams"
 `include "constants.vams"
 
