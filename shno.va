@@ -1,4 +1,4 @@
-// code adapted from LC oscillator macromodel in:
+// theory based on LC oscillator macromodel in:
 // B. Gu, K. K. Gullapalli, S. Hamm, B. Mulvaney, X. Lai, and J. Roychowdhury,
 // “Implementing nonlinear oscillator macromodels using Verilog-AMS for accurate prediction of injection locking behaviors of oscillators,” in BMAS 2005.
 // Proceedings of the 2005 IEEE International Behavioral Modeling and Simulation Workshop, 2005., Sep. 2005, pp. 43–47. doi: 10.1109/BMAS.2005.1518185.
@@ -12,10 +12,9 @@ module shno(sh_dc, sh_rf, mtj);
 // define electrical nodes
 input sh_dc, sh_rf;
 inout mtj;
-electrical sh_dc, sh_rf, mtj, alpha; // introduce internal node alpha
-// define branches from internal node alpha
-branch (alpha) alpha1;
-branch (alpha) alpha2;
+electrical sh_dc, sh_rf, mtj, phi_t; // internal node phi_t used for solving Adler's eq
+branch (phi_t) phi_t1;
+branch (phi_t) phi_t2;
 
 // define circuit-level variables
 real Rp = 1200; // parallel MTJ resistance (nanopillar only), Ohms
@@ -100,11 +99,8 @@ analog begin
   I(sh_rf) <+ V(sh_rf)/Rhm;
   I(sh_dc) <+ V(sh_dc)/Rhm;
 
-  // real perturbed time is given by
-  // $abstime + V(alpha)
-  // but our isf table has only one period
-  // so take the modulus of period
-  psi = omega*($abstime+V(alpha))+`M_PI/180*init_phase;
+  // total oscillator phase
+  psi = omega*($abstime+V(phi_t))+`M_PI/180*init_phase;
 
   // calculate ISF based on analytical expression
   dmeq = omega*omega/2*(fdmeq[1]+fdmeq[2]*cos(2*psi)+fdmeq[3]*cos(4*psi));
@@ -131,15 +127,15 @@ analog begin
   Tfield = Btherm*(eta_x*isf_bx+eta_y*isf_by+eta_z*isf_bz); // multiply each thermal field component with corresponding ISF
 
   // RHS of phase differential equation
-  // linramp goes from 0 to 1 in first ns to set initial condition alpha(t=0) = 0
-  I(alpha1) <+ -$table_model($abstime,"linramp.tbl", "L")*((isf_odd+isf_even)*(V(sh_rf)+Vshil)+Tfield);
+  // linramp goes from 0 to 1 in first ns to set initial condition phi_t(t=0) = 0
+  I(phi_t1) <+ -$table_model($abstime,"linramp.tbl", "L")*((isf_odd+isf_even)*(V(sh_rf)+Vshil)+Tfield);
   // LHS of phase differential equation
-  I(alpha2) <+ ddt(V(alpha));
+  I(phi_t2) <+ ddt(V(phi_t));
 
-  // output variables for data collection, debugging, etc.
-  phase = V(alpha)*omega/`M_PI + init_phase/180; // output only, units of pi rad
+  // oscillator phase phi, not including omega_g*t, for output
+  phase = V(phi_t)*omega/`M_PI + init_phase/180; // units of pi rad
 
-  // look up table to generate output
+  // MTJ electrical output signal
   V(mtj) <+ I(mtj)*((Rp+Rap+Rhm)/2+(Rap-Rp)/2*mx*sin(psi));
 end
 endmodule
