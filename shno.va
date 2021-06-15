@@ -67,14 +67,14 @@ analog begin
     eta_y = $rdist_normal(seed,0.0,1.0);
     eta_z = $rdist_normal(seed,0.0,1.0);
 
-    omega = $table_model(V(sh_dc), "wg_vs_vdc.tbl", "L"); // free-running angular frequency
+    omega = $table_model(V(sh_dc), "tables/wg_vs_vdc.tbl", "L"); // free-running angular frequency
     period = 2.0*`M_PI/omega; // s
 
     // Get equilibrium orbit Fourier components based on Vdc
-    mx = $table_model(V(sh_dc), "mx_ft_vs_vdc.tbl", "L");
-    my = $table_model(V(sh_dc), "my_ft_vs_vdc.tbl", "L");
-    my0 = $table_model(V(sh_dc), "my0_ft_vs_vdc.tbl", "L");
-    mz = $table_model(V(sh_dc), "mz_ft_vs_vdc.tbl", "L");
+    mx = $table_model(V(sh_dc), "tables/mx_ft_vs_vdc.tbl", "L");
+    my = $table_model(V(sh_dc), "tables/my_ft_vs_vdc.tbl", "L");
+    my0 = $table_model(V(sh_dc), "tables/my0_ft_vs_vdc.tbl", "L");
+    mz = $table_model(V(sh_dc), "tables/mz_ft_vs_vdc.tbl", "L");
 
     // equilibrium magnetization Fourier components (in order 0th, 2nd, 4th order)
     fdmeq[1] = mx*mx+4*my*my+mz*mz;
@@ -112,7 +112,7 @@ analog begin
 	
   // SHIL signal amplitude, V
   V2f = 1.5e11*Ash*Rhm; // constant second harmonic signal amplitude
-  //V2f = 2.5e11*Ash*Rhm*$table_model($abstime,"shil_square.tbl", "L"); // T=200 ns, 50% duty cycle square wave annealing schedule
+  //V2f = 2.5e11*Ash*Rhm*$table_model($abstime,"tables/shil_square.tbl", "L"); // T=200 ns, 50% duty cycle square wave annealing schedule
 
   // SHIL signal
   Vshil = -V2f*cos(2*omega*$abstime);
@@ -128,7 +128,7 @@ analog begin
 
   // RHS of phase differential equation
   // linramp goes from 0 to 1 in first ns to set initial condition phi_t(t=0) = 0
-  I(phi_t1) <+ -$table_model($abstime,"linramp.tbl", "L")*((isf_odd+isf_even)*(V(sh_rf)+Vshil)+Tfield);
+  I(phi_t1) <+ -$table_model($abstime,"tables/linramp.tbl", "L")*((isf_odd+isf_even)*(V(sh_rf)+Vshil)+Tfield);
   // LHS of phase differential equation
   I(phi_t2) <+ ddt(V(phi_t));
 
