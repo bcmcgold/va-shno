@@ -1,0 +1,7 @@
+# cosoutput.tbl
+# cosine output function in phase with ppv_diam50nm_Jdc2.1e12Am2_N50_J20.tbl
+#
+# cycles out(cycles)
+0 0
+1e-9 1
+1 1
