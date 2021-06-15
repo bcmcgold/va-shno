@@ -67,7 +67,7 @@ analog begin
     eta_y = $rdist_normal(seed,0.0,1.0);
     eta_z = $rdist_normal(seed,0.0,1.0);
 
-    omega = 2.0*`M_PI*$table_model(V(sh_dc), "fg_vs_vdc.tbl", "L"); // free-running angular frequency
+    omega = $table_model(V(sh_dc), "wg_vs_vdc.tbl", "L"); // free-running angular frequency
     period = 2.0*`M_PI/omega; // s
 
     // Get equilibrium orbit Fourier components based on Vdc
