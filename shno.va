@@ -1,7 +1,5 @@
-// source: ISF-based macromodel for LC oscillator in Verilog-A
-// B. Gu, K. K. Gullapalli, S. Hamm, B. Mulvaney, X. Lai, and J. Roychowdhury,
-// “Implementing nonlinear oscillator macromodels using Verilog-AMS for accurate prediction of injection locking behaviors of oscillators,” in BMAS 2005.
-// Proceedings of the 2005 IEEE International Behavioral Modeling and Simulation Workshop, 2005., Sep. 2005, pp. 43–47. doi: 10.1109/BMAS.2005.1518185.
+// Verilog-A macromodel code for 3-terminal spin Hall nano-oscillator
+// Models electrical behavior, thermal phase noise (by specifying T below), and injection locking to an external rf signal
 `include "disciplines.vams"
 `include "constants.vams"
 
@@ -51,7 +49,7 @@ real gammae = g*muB/hbar; // free electron gyromagnetic ratio, rad/(s T)
 real sigma = hbar*thetaSH/(2*ec*Ms*Ash*tfl);
 
 // user variables for random thermal field generation (may change)
-real T = 300; // K
+real T = 0; // K
 real dt_step = 15e-12; // timestep for computing thermal field, s (should be equal or multiple of HSPICE timestep set with .interp)
 parameter seed = 12345; // seed for random thermal field generation, can be set from hspice netlist
 
