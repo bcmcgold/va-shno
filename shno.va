@@ -31,7 +31,7 @@ parameter real init_phase=0.0 from[-180:180]; // oscillator initial phase can be
 // construct Fourier representation of ISF
 real isf_odd, isf_even, isf_bx, isf_by, isf_bz, mx, my, my0, mz, dmeq, fdmeq[1:3], fs[1:5], fb[1:4];
 
-// material parameters (relevant for thermal field)
+// define material parameters (relevant for thermal field)
 real damping = 0.02; // Gilbert damping, unitless
 real Ms = 800e3; // saturation magnetization, A/m
 real wmtj = 120e-9; // MTJ width, m
@@ -39,7 +39,7 @@ real lmtj = 200e-9; // MTJ length, m
 real tfl = 1.5e-9; // free layer thickness, m
 real Vfl = `M_PI/4*wmtj*lmtj*tfl; // magnetic free layer volume (ellipse-shaped), m3
 
-// physics constants
+// physics constants (don't change)
 real kB = 1.38e-23; // Boltzmann constant J/K
 real g = 2; // g-factor
 real muB = 9.27401008e-24; // Bohr magneton, A m2
@@ -48,8 +48,8 @@ real ec = 1.602e-19; // elementary charge, C
 real gammae = g*muB/hbar; // free electron gyromagnetic ratio, rad/(s T)
 real sigma = hbar*thetaSH/(2*ec*Ms*Ash*tfl);
 
-// user variables for random thermal field generation (may change)
-real T = 0; // K
+// define user variables for random thermal field generation
+real T = 300; // K
 real dt_step = 15e-12; // timestep for computing thermal field, s (should be equal or multiple of HSPICE timestep set with .interp)
 parameter seed = 12345; // seed for random thermal field generation, can be set from hspice netlist
 
@@ -60,6 +60,8 @@ real Btherm = sqrt(2*damping*kB*T/(Ms*gammae/(2*`M_PI)*Vfl*dt_step));
 
 analog begin
   @(initial_step) begin // initial_step runs in first simulation step (measure DC operating point to determine frequency and ISF)
+    // don't change anything in initial_step unless replacing ISF expression
+
     // initialize thermal field components
     eta_x = $rdist_normal(seed,0.0,1.0);
     eta_y = $rdist_normal(seed,0.0,1.0);
@@ -92,6 +94,12 @@ analog begin
     fb[3] = -(3*my+2*my0)*mx;
     fb[4] = mx*my/9;
   end
+
+  // define SHIL signal amplitude, V
+  V2f = 1.5e11*Ash*Rhm; // constant second harmonic signal amplitude
+  //V2f = 2.5e11*Ash*Rhm*$table_model($abstime,"tables/shil_square.tbl", "L"); // T=200 ns, 50% duty cycle square wave annealing schedule
+
+  // don't change anything below
   
   // Sets input impedance of spin Hall RF and DC ports
   I(sh_rf) <+ V(sh_rf)/Rhm;
@@ -107,13 +115,9 @@ analog begin
   isf_bx = omega*gammae/(2*dmeq)*(fb[1]*sin(psi)+fb[2]*sin(3*psi));
   isf_by = omega*gammae/dmeq*mx*mz;
   isf_bz = omega*gammae/(2*dmeq)*(fb[3]*cos(psi)+fb[4]*cos(3*psi));
-	
-  // SHIL signal amplitude, V
-  V2f = 1.5e11*Ash*Rhm; // constant second harmonic signal amplitude
-  //V2f = 2.5e11*Ash*Rhm*$table_model($abstime,"tables/shil_square.tbl", "L"); // T=200 ns, 50% duty cycle square wave annealing schedule
 
   // SHIL signal
-  Vshil = -V2f*cos(2*omega*$abstime);
+  Vshil = -V2f*cos(2*omega*$abstime); // to change Vshil, change amplitude V2f above
 
   // effective thermal field
   if ($abstime-dt_sim >= dt_step) begin // update eta every dt_sim seconds
