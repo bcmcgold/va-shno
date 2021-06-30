@@ -1,5 +1,4 @@
 * Simple Injection Locking Test
-* note, this file should be placed in same directory as va file or below path must be updated
 .hdl "shno.va"
 
 * DC biasing on MTJ and heavy metal
