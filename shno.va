@@ -138,6 +138,6 @@ analog begin
   phase = V(phi_t)*omega/`M_PI + init_phase/180; // units of pi rad
 
   // MTJ electrical output signal
-  V(mtj) <+ I(mtj)*((Rp+Rap+Rhm)/2+(Rap-Rp)/2*mx*sin(psi));
+  V(mtj) <+ I(mtj)*((Rp+Rap+Rhm)/2+(Rp-Rap)/2*mx*sin(psi));
 end
 endmodule
