@@ -1,6 +1,6 @@
 # shil_square.tbl
 #
-# t(s) out(cycles)
+# t(s) out(norm.)
 0 0
 90e-9 0
 100e-9 1
