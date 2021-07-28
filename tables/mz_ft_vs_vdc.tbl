@@ -1,3 +1,7 @@
+# mz_ft_vs_vdc.tbl
+# First order Fourier component of equilibrium orbit z-component as function of Vdc
+#
+# Vdc(V) mz
 0.1 0.222400999327126
 0.098 0.221381385624999
 0.096 0.219649842476959
