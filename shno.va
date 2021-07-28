@@ -28,7 +28,6 @@ real Vfl = `M_PI/4*wmtj*lmtj*tfl; // magnetic free layer volume (ellipse-shaped)
 // random thermal field generation
 real T = 300; // K
 real dt_step = 15e-12; // timestep for computing thermal field, s (should be equal or multiple of HSPICE timestep set with .interp)
-parameter seed = 12345; // seed for random thermal field generation, can be set from hspice netlist
 
 // -- end user input --
 
@@ -46,7 +45,7 @@ parameter real init_phase=0.0 from[-180:180]; // oscillator initial phase can be
 // construct Fourier representation of ISF
 real isf_odd, isf_even, isf_bx, isf_by, isf_bz, mx, my, my0, mz, dmeq, fdmeq[1:3], fs[1:5], fb[1:4];
 
-// physics constants (don't change)
+// physics constants
 real kB = 1.38e-23; // Boltzmann constant J/K
 real g = 2; // g-factor
 real muB = 9.27401008e-24; // Bohr magneton, A m2
@@ -55,10 +54,11 @@ real ec = 1.602e-19; // elementary charge, C
 real gammae = g*muB/hbar; // free electron gyromagnetic ratio, rad/(s T)
 real sigma = hbar*thetaSH/(2*ec*Ms*Ash*tfl);
 
-// constants/variables for thermal field (don't change)
+// constants/variables for thermal field
 real dt_sim = 0; // for keeping track of when thermal field should be changed
 real eta_x, eta_y, eta_z; // thermal field components (chosen from normal dist)
 real Btherm = sqrt(2*damping*kB*T/(Ms*gammae/(2*`M_PI)*Vfl*dt_step));
+parameter seed = 12345; // seed for random thermal field generation, can be set from hspice netlist
 
 analog begin
   @(initial_step) begin // initial_step runs in first simulation step (measure DC operating point to determine frequency and ISF)
