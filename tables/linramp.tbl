@@ -2,7 +2,7 @@
 # Ramp from 0 to 1 in first nanosecond, then hold at 1 for rest of simulation
 # Used in va model to set initial condition in Adler's equation as 0
 #
-# t(s) out(norm.)
+# t(s) out
 0 0
 1e-9 1
 1 1
