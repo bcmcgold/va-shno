@@ -1,3 +1,7 @@
+# mx_ft_vs_vdc.tbl
+# First order Fourier component of equilibrium orbit x-component as function of Vdc
+#
+# Vdc(V) mx
 0.1 1.00013859950583
 0.098 1.00063146692992
 0.096 1.0014067987039
