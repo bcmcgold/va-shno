@@ -1,7 +1,8 @@
-# cosoutput.tbl
-# cosine output function in phase with ppv_diam50nm_Jdc2.1e12Am2_N50_J20.tbl
+# linramp.tbl
+# Ramp from 0 to 1 in first nanosecond, then hold at 1 for rest of simulation
+# Used in va model to set initial condition in Adler's equation as 0
 #
-# cycles out(cycles)
+# t(s) out(norm.)
 0 0
 1e-9 1
 1 1
