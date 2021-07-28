@@ -1,3 +1,7 @@
+# my0_ft_vs_vdc.tbl
+# Zeroth order Fourier component of equilibrium orbit y-component as function of Vdc
+#
+# Vdc(V) mx
 0.1 0.522774557778242
 0.098 0.528911491738154
 0.096 0.537563815153529
