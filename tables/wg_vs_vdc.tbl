@@ -1,3 +1,7 @@
+# wg_vs_vdc.tbl
+# Free-running oscillator frequency as function of Vdc
+#
+# Vdc(V) wg
 0.1 14102378896.3189
 0.098 14102378896.3189
 0.096 14172192653.2314
