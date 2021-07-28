@@ -1,9 +1,11 @@
 # va-shno
-Behavioral macromodel of spin Hall nano-oscillator written in Verilog-A.
+Behavioral macromodel of 3-terminal spin Hall nano-oscillator written in Verilog-A.
+Models electrical behavior (microwave output signal, effective terminal resistances), injection locking (based on impulse sensitivity function), 
 
-# Documentation
-Refer to paper: xx
+## Paper
+xx
 
+## Documentation
 Macromodel file: shno.va
 - User-specified parameters
   - Material/device parameters: lines 8-33
