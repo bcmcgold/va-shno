@@ -1,6 +1,7 @@
 # shil_square.tbl
+# Second harmonic square wave annealing schedule: T = 200 ns, 10 ns ramp, 50% duty cycle
 #
-# t(s) out(norm.)
+# t(s) out
 0 0
 90e-9 0
 100e-9 1
