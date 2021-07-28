@@ -1,20 +1,13 @@
-// Verilog-A macromodel code for 3-terminal spin Hall nano-oscillator
-// Models electrical behavior, thermal phase noise (by specifying T below), and injection locking to an external rf signal
+// Verilog-A macromodel code for 3-terminal spin Hall nano-oscillator with in-plane applied field
+// Models electrical behavior, thermal phase noise, and injection locking to an external rf signal
 `include "disciplines.vams"
 `include "constants.vams"
 
-// Analytical ISF-based oscillator macromodel with DC nonlinearity based on user input
-// Based on in-plane orbit (other orbital trajectories have different analytical equations for ISF)
 module shno(sh_dc, sh_rf, mtj);
 
-// define electrical nodes
-input sh_dc, sh_rf;
-inout mtj;
-electrical sh_dc, sh_rf, mtj, phi_t; // internal node phi_t used for solving Adler's eq
-branch (phi_t) phi_t1;
-branch (phi_t) phi_t2;
+// -- user-input material and device parameters --
 
-// define circuit-level variables
+// circuit-level variables
 real Rp = 1200; // parallel MTJ resistance (nanopillar only), Ohms
 real Rap = 2400; // anti-parallel MTJ resistance (nanopillar only), Ohms
 real Rhm = 200; // heavy metal resistance, Ohms
@@ -24,20 +17,34 @@ real Ash = whm*thm; // cross-sectional area of SH strip where current flows in, 
 real gammap = 30*`M_PI/180; // spin polarization angle from x-axis, radians
 real thetaSH = 0.07; // spin Hall angle, unitless
 
-// define oscillator-level variables for phase model
-real period, phase, omega, psi;
-parameter real init_phase=0.0 from[-180:180]; // oscillator initial phase can be set from hspice netlist, degrees
-
-// construct Fourier representation of ISF
-real isf_odd, isf_even, isf_bx, isf_by, isf_bz, mx, my, my0, mz, dmeq, fdmeq[1:3], fs[1:5], fb[1:4];
-
-// define material parameters (relevant for thermal field)
+// material parameters
 real damping = 0.02; // Gilbert damping, unitless
 real Ms = 800e3; // saturation magnetization, A/m
 real wmtj = 120e-9; // MTJ width, m
 real lmtj = 200e-9; // MTJ length, m
 real tfl = 1.5e-9; // free layer thickness, m
 real Vfl = `M_PI/4*wmtj*lmtj*tfl; // magnetic free layer volume (ellipse-shaped), m3
+
+// random thermal field generation
+real T = 300; // K
+real dt_step = 15e-12; // timestep for computing thermal field, s (should be equal or multiple of HSPICE timestep set with .interp)
+parameter seed = 12345; // seed for random thermal field generation, can be set from hspice netlist
+
+// -- end user input --
+
+// define electrical nodes
+input sh_dc, sh_rf;
+inout mtj;
+electrical sh_dc, sh_rf, mtj, phi_t; // internal node phi_t used for solving Adler's eq
+branch (phi_t) phi_t1;
+branch (phi_t) phi_t2;
+
+// define oscillator-level variables for phase model
+real period, phase, omega, psi;
+parameter real init_phase=0.0 from[-180:180]; // oscillator initial phase can be set from hspice netlist, degrees
+
+// construct Fourier representation of ISF
+real isf_odd, isf_even, isf_bx, isf_by, isf_bz, mx, my, my0, mz, dmeq, fdmeq[1:3], fs[1:5], fb[1:4];
 
 // physics constants (don't change)
 real kB = 1.38e-23; // Boltzmann constant J/K
@@ -48,11 +55,6 @@ real ec = 1.602e-19; // elementary charge, C
 real gammae = g*muB/hbar; // free electron gyromagnetic ratio, rad/(s T)
 real sigma = hbar*thetaSH/(2*ec*Ms*Ash*tfl);
 
-// define user variables for random thermal field generation
-real T = 300; // K
-real dt_step = 15e-12; // timestep for computing thermal field, s (should be equal or multiple of HSPICE timestep set with .interp)
-parameter seed = 12345; // seed for random thermal field generation, can be set from hspice netlist
-
 // constants/variables for thermal field (don't change)
 real dt_sim = 0; // for keeping track of when thermal field should be changed
 real eta_x, eta_y, eta_z; // thermal field components (chosen from normal dist)
@@ -60,7 +62,6 @@ real Btherm = sqrt(2*damping*kB*T/(Ms*gammae/(2*`M_PI)*Vfl*dt_step));
 
 analog begin
   @(initial_step) begin // initial_step runs in first simulation step (measure DC operating point to determine frequency and ISF)
-    // don't change anything in initial_step unless replacing ISF expression
 
     // initialize thermal field components
     eta_x = $rdist_normal(seed,0.0,1.0);
@@ -94,12 +95,14 @@ analog begin
     fb[3] = -(3*my+2*my0)*mx;
     fb[4] = mx*my/9;
   end
+  
+  // -- define user-input excitation parameters --
 
-  // define SHIL signal amplitude, V
+  // SHIL signal amplitude, V
   V2f = 1.5e11*Ash*Rhm; // constant second harmonic signal amplitude
   //V2f = 2.5e11*Ash*Rhm*$table_model($abstime,"tables/shil_square.tbl", "L"); // T=200 ns, 50% duty cycle square wave annealing schedule
 
-  // don't change anything below
+  // -- end user input --
   
   // Sets input impedance of spin Hall RF and DC ports
   I(sh_rf) <+ V(sh_rf)/Rhm;
