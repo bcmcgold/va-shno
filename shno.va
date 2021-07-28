@@ -26,7 +26,7 @@ real tfl = 1.5e-9; // free layer thickness, m
 real Vfl = `M_PI/4*wmtj*lmtj*tfl; // magnetic free layer volume (ellipse-shaped), m3
 
 // random thermal field generation
-real T = 300; // K
+real T = 0; // K
 real dt_step = 15e-12; // timestep for computing thermal field, s (should be equal or multiple of HSPICE timestep set with .interp)
 
 // -- end user input --
@@ -39,7 +39,7 @@ branch (phi_t) phi_t1;
 branch (phi_t) phi_t2;
 
 // define oscillator-level variables for phase model
-real period, phase, omega, psi;
+real phase, omega, psi, V2f, Vshil;
 parameter real init_phase=0.0 from[-180:180]; // oscillator initial phase can be set from hspice netlist, degrees
 
 // construct Fourier representation of ISF
@@ -56,9 +56,9 @@ real sigma = hbar*thetaSH/(2*ec*Ms*Ash*tfl);
 
 // constants/variables for thermal field
 real dt_sim = 0; // for keeping track of when thermal field should be changed
-real eta_x, eta_y, eta_z; // thermal field components (chosen from normal dist)
+real eta_x, eta_y, eta_z, Tfield; // thermal field components (chosen from normal dist)
 real Btherm = sqrt(2*damping*kB*T/(Ms*gammae/(2*`M_PI)*Vfl*dt_step));
-parameter seed = 12345; // seed for random thermal field generation, can be set from hspice netlist
+parameter integer seed = 12345; // seed for random thermal field generation, can be set from hspice netlist
 
 analog begin
   @(initial_step) begin // initial_step runs in first simulation step (measure DC operating point to determine frequency and ISF)
@@ -69,7 +69,6 @@ analog begin
     eta_z = $rdist_normal(seed,0.0,1.0);
 
     omega = $table_model(V(sh_dc), "tables/wg_vs_vdc.tbl", "L"); // free-running angular frequency
-    period = 2.0*`M_PI/omega; // s
 
     // Get equilibrium orbit Fourier components based on Vdc
     mx = $table_model(V(sh_dc), "tables/mx_ft_vs_vdc.tbl", "L");
@@ -99,7 +98,8 @@ analog begin
   // -- define user-input excitation parameters --
 
   // SHIL signal amplitude, V
-  V2f = 1.5e11*Ash*Rhm; // constant second harmonic signal amplitude
+  V2f = 0;
+  //V2f = 1.5e11*Ash*Rhm; // constant second harmonic signal amplitude
   //V2f = 2.5e11*Ash*Rhm*$table_model($abstime,"tables/shil_square.tbl", "L"); // T=200 ns, 50% duty cycle square wave annealing schedule
 
   // -- end user input --
