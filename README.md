@@ -3,7 +3,7 @@ Behavioral macromodel of 3-terminal spin Hall nano-oscillator written in Verilog
 Models electrical behavior (microwave output signal, effective terminal resistances), injection locking, thermal phase noise.
 
 ## Paper
-xx
+B. C. McGoldrick, J. Z. Sun, L. Liu. Ising machine based on electrically coupled spin Hall nano-oscillators. Phys. Rev. Appl., Under review (2021).
 
 ## Documentation
 Macromodel file: shno.va
