@@ -2,10 +2,10 @@
 .hdl "shno.va"
 
 * DC biasing on MTJ and heavy metal
-vmtj vmtj 0 400m
-ru1 vmtj mtj 1.9k
-vdc vdc 0 968m
-ru2 vdc shdc 2k
+vmtj vmtj 0 300m
+ru1 vmtj mtj 500
+vdc vdc 0 176m
+ru2 vdc shdc 200
 
 * injection locking signal source, SIN (offset amp freq timedelay damping phasedelay)
 vrf shrf gnd SIN (0 88m 2.266G 0 0 0)
